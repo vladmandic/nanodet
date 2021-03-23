@@ -7,11 +7,12 @@ const canvas = require('canvas');
 const { labels } = require('./coco-labels');
 
 const modelOptions = {
-  modelPath: 'file://model-tfjs-graph-t/nanodet.json',
-  minScore: 0.23, // low confidence, but still remove irrelevant
-  iouThreshold: 0.5, // percentage when removing overlapped boxes
+  modelPath: 'file://model-tfjs-graph-m/nanodet.json',
+  minScore: 0.20, // low confidence, but still remove irrelevant
+  iouThreshold: 0.40, // percentage when removing overlapped boxes
   maxResults: 20, // high number of results, but likely never reached
   scaleBox: 2.5, // increase box size
+  activateScore: false, // use exponential function to active scores or use them as-is
 };
 
 // save image with processed results
@@ -24,20 +25,19 @@ async function saveImage(img, res) {
   const original = await canvas.loadImage(img.fileName);
   ctx.drawImage(original, 0, 0, c.width, c.height);
   // const fontSize = Math.trunc(c.width / 50);
-  const fontSize = Math.round(Math.sqrt(c.width));
+  const fontSize = Math.round(Math.sqrt(c.width) / 1.5);
   ctx.lineWidth = 2;
   ctx.strokeStyle = 'white';
-  ctx.fillStyle = 'white';
   ctx.font = `${fontSize}px "Segoe UI"`;
 
   // draw all detected objects
   for (const obj of res) {
     // draw label at center
-    // ctx.fillText(`${Math.round(100 * obj.score)}% [${obj.strideSize}] #${obj.class} ${obj.label}`, obj.box[0] + 4, obj.box[1] - 2);
     ctx.fillStyle = 'black';
     ctx.fillText(`${Math.round(100 * obj.score)}% ${obj.label}`, obj.box[0] + 5, obj.box[1] - 3);
     ctx.fillStyle = 'white';
     ctx.fillText(`${Math.round(100 * obj.score)}% ${obj.label}`, obj.box[0] + 4, obj.box[1] - 4);
+    // ctx.fillText(`${Math.round(100 * obj.score)}% [${obj.strideSize}] #${obj.class} ${obj.label}`, obj.box[0] + 4, obj.box[1] - 4);
     // draw rect using x,y,h,w
     ctx.rect(obj.box[0], obj.box[1], obj.box[2] - obj.box[0], obj.box[3] - obj.box[1]);
   }
@@ -83,14 +83,13 @@ async function processResults(res, inputSize, outputShape) {
       const featuresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] < 80))?.squeeze();
       log.state('Found features tensor:', featuresT?.shape);
       log.state('Found scores tensor:', scoresT?.shape);
-      // const scoreIdx = scores.argMax(1).dataSync(); // location of highest scores for a given stride
-      // const scoresMax = scores.max(1).dataSync(); // values of highest scores for a given stride
-      const boxesMax = featuresT.reshape([-1, 4, featuresT.shape[1] / 4]); // reshape [32] to [4,8] where 8 is change of different features inside stride
+      const boxesMax = featuresT.reshape([-1, 4, featuresT.shape[1] / 4]); // reshape [output] to [4, output / 4] where number is number of different features inside each stride
       const boxIdx = boxesMax.argMax(2).arraySync(); // what we need is indexes of features with highest scores, not values itself
-      const scores = scoresT.arraySync();
-      for (let i = 0; i < scoresT.shape[0]; i++) {
-        for (let j = 0; j < scoresT.shape[1]; j++) {
-          if (scores[i][j] > modelOptions.minScore) {
+      const scores = modelOptions.activateScore ? scoresT.exp(1).arraySync() : scoresT.arraySync(); // optionally use exponential scores or just as-is
+      for (let i = 0; i < scoresT.shape[0]; i++) { // total strides (x * y matrix)
+        for (let j = 0; j < scoresT.shape[1]; j++) { // one score for each class
+          const score = scores[i][j] - (modelOptions.activateScore ? 1 : 0); // get score for current position
+          if (score > modelOptions.minScore) {
             const cx = (0.5 + Math.trunc(i % baseSize)) / baseSize; // center.x normalized to range 0..1
             const cy = (0.5 + Math.trunc(i / baseSize)) / baseSize; // center.y normalized to range 0..1
             const boxOffset = boxIdx[i].map((a) => a * (baseSize / strideSize / inputSize)); // just grab indexes of features with highest scores
@@ -110,7 +109,7 @@ async function processResults(res, inputSize, outputShape) {
             const result = {
               id: id++,
               strideSize,
-              score: scores[i][j],
+              score,
               class: j + 1,
               label: labels[j].label,
               center: [Math.trunc(outputShape[0] * cx), Math.trunc(outputShape[1] * cy)],
@@ -121,9 +120,6 @@ async function processResults(res, inputSize, outputShape) {
             results.push(result);
           }
         }
-        /*
-        if (scoreIdx[i] !== 0 && scoresMax[i] > modelOptions.minScore) {
-        */
       }
     });
   }
