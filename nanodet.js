@@ -4,11 +4,12 @@ const process = require('process');
 const log = require('@vladmandic/pilogger');
 const tf = require('@tensorflow/tfjs-node');
 const canvas = require('canvas');
-const { labels } = require('./coco-labels');
+const { labels } = require('./coco-labels'); // note that number of labels *must* match expected output of the model
 
 const modelOptions = {
   modelPath: 'file://model-tfjs-graph-g/nanodet.json',
-  // modelPath: 'https://recall-models.s3.eu-central-1.amazonaws.com/nanodet_hardhat/model.json',
+  // modelPath: 'file://model-tfjs-graph-m/nanodet.json',
+  // modelPath: 'file://model-tfjs-graph-m-f16/nanodet.json',
   minScore: 0.20, // low confidence, but still remove irrelevant
   iouThreshold: 0.40, // percentage when removing overlapped boxes
   maxResults: 20, // high number of results, but likely never reached
@@ -80,7 +81,7 @@ async function processResults(res, inputSize, outputShape) {
       const baseSize = strideSize * 13; // 13x13=169, 26x26=676, 52x52=2704
       // find boxes and scores output depending on stride
       log.info('Variation:', strideSize, 'strides', baseSize, 'baseSize');
-      const scoresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] === labels.length))?.squeeze();
+      const scoresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] === labels?.length))?.squeeze();
       const featuresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && (a.shape[2] === 32 || a.shape[2] === 44)))?.squeeze();
       log.state('Found features tensor:', featuresT?.shape);
       log.state('Found scores tensor:', scoresT?.shape);
