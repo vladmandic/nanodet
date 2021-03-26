@@ -7,7 +7,8 @@ const canvas = require('canvas');
 const { labels } = require('./coco-labels');
 
 const modelOptions = {
-  modelPath: 'file://model-tfjs-graph-m/nanodet.json',
+  modelPath: 'file://model-tfjs-graph-g/nanodet.json',
+  // modelPath: 'https://recall-models.s3.eu-central-1.amazonaws.com/nanodet_hardhat/model.json',
   minScore: 0.20, // low confidence, but still remove irrelevant
   iouThreshold: 0.40, // percentage when removing overlapped boxes
   maxResults: 20, // high number of results, but likely never reached
@@ -79,8 +80,8 @@ async function processResults(res, inputSize, outputShape) {
       const baseSize = strideSize * 13; // 13x13=169, 26x26=676, 52x52=2704
       // find boxes and scores output depending on stride
       log.info('Variation:', strideSize, 'strides', baseSize, 'baseSize');
-      const scoresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] === 80))?.squeeze();
-      const featuresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] < 80))?.squeeze();
+      const scoresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && a.shape[2] === labels.length))?.squeeze();
+      const featuresT = res.find((a) => (a.shape[1] === (baseSize ** 2) && (a.shape[2] === 32 || a.shape[2] === 44)))?.squeeze();
       log.state('Found features tensor:', featuresT?.shape);
       log.state('Found scores tensor:', scoresT?.shape);
       const boxesMax = featuresT.reshape([-1, 4, featuresT.shape[1] / 4]); // reshape [output] to [4, output / 4] where number is number of different features inside each stride
