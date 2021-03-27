@@ -6,6 +6,11 @@ Models descriptors have been additionally parsed for readability
 Actual model parsing implementation in `nanodet.js` does not follow original  
 and is fully custom and optimized for JavaScript execution
 
+Original model is internally using Int64 values, but TFJS does not support Int64 so there are some overflows due to Int32 casting,  
+Most commonly around class 62, so that one is excluded from results  
+
+Note that `NanoDet-G` variation is about 4x faster in Browser execution using `WebGL` backend than `NanoDet-M` variation  
+
 <br><hr><br>
 
 ## Conversion Notes
