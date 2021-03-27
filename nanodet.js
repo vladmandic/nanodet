@@ -169,10 +169,15 @@ async function main() {
   log.info('Loaded image:', img.fileName, 'inputShape:', img.inputShape, 'outputShape:', img.outputShape);
 
   // run actual prediction
+  const t0 = process.hrtime.bigint();
   const res = model.predict(img.tensor);
+  const t1 = process.hrtime.bigint();
+  log.info('Inference time:', Math.round(parseInt((t1 - t0).toString()) / 1000 / 1000), 'ms');
 
   // process results
   const results = await processResults(res, inputSize, img.inputShape);
+  const t2 = process.hrtime.bigint();
+  log.info('Processing time:', Math.round(parseInt((t2 - t1).toString()) / 1000 / 1000), 'ms');
 
   // print results
   log.data('Results:', results);
