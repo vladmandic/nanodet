@@ -91,7 +91,8 @@ async function processResults(res, inputSize, outputShape) {
       for (let i = 0; i < scoresT.shape[0]; i++) { // total strides (x * y matrix)
         for (let j = 0; j < scoresT.shape[1]; j++) { // one score for each class
           const score = scores[i][j] - (modelOptions.activateScore ? 1 : 0); // get score for current position
-          if (score > modelOptions.minScore) {
+          // since original model is int64 based and tfjs casts it to int32 there are some overflows, most commonly around class 61 - so lets exclude those
+          if (score > modelOptions.minScore && j !== 61) {
             const cx = (0.5 + Math.trunc(i % baseSize)) / baseSize; // center.x normalized to range 0..1
             const cy = (0.5 + Math.trunc(i / baseSize)) / baseSize; // center.y normalized to range 0..1
             const boxOffset = boxIdx[i].map((a) => a * (baseSize / strideSize / inputSize)); // just grab indexes of features with highest scores
