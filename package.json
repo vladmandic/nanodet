@@ -1,7 +1,7 @@
 {
   "name": "nanodet",
   "version": "0.0.1",
-  "description": "nanodet port to tfjs",
+  "description": "NanoDet: Tiny Object Detection for TFJS and NodeJS",
   "main": "index.js",
   "scripts": {
     "start": "node nanodet.js"
