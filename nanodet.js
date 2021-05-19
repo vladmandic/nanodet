@@ -132,7 +132,7 @@ async function processResults(res, inputSize, outputShape) {
 
   // normally nms is run on raw results, but since boxes need to be calculated this way we skip calulcation of
   // unnecessary boxes and run nms only on good candidates (basically it just does IOU analysis as scores are already filtered)
-  const nmsBoxes = results.map((a) => a.box);
+  const nmsBoxes = results.map((a) => [a.box[1], a.box[0], a.box[3], a.box[2]]); // switches boxes for nms from x,y to y,x
   const nmsScores = results.map((a) => a.score);
   const nms = await tf.image.nonMaxSuppressionAsync(nmsBoxes, nmsScores, modelOptions.maxResults, modelOptions.iouThreshold, modelOptions.minScore);
   const nmsIdx = nms.dataSync();
