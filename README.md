@@ -10,6 +10,18 @@ Most commonly around class 62, so that one is excluded from results
 
 Note that `NanoDet-G` variation is about 4x faster in Browser execution using `WebGL` backend than `NanoDet-M` variation  
 
+Function `processResults()` takes output of `model.execute` and returns array of objects:
+
+- id: internal number of detection box, used only for debugging
+- strideSize: internal size of the stride where object was detected, used only for debugging
+- score: value 0..1
+- class: coco class number
+- label: coco label as string
+- box: detection box [x1, y1, x2, y2] normalized to input image dimensions
+- boxRaw: detection box [x1, y1, x2, y2] normalized to 0..1
+- center: center point of detected object [x, y] normalized to input image dimensions
+- centerRaw: center point of detected object [x, y] normalized to 0..1
+
 ![Example Image](outputs/cars.jpg)
 
 <br><hr><br>
