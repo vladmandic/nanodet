@@ -3,6 +3,8 @@
 Models included in `/model-tfjs-graph-*` were converted to TFJS Graph model format from the original repository  
 Models descriptors and signature have been additionally parsed for readability
 
+## Implementation
+
 Actual model parsing implementation in `nanodet.js` does not follow original Pyhthon implementation and is fully custom and optimized for JavaScript execution
 
 Original model is internally using Int64 values, but TFJS does not support Int64 so there are some overflows due to Int32 casting,  
@@ -22,7 +24,9 @@ Function `processResults()` takes output of `model.execute` and returns array of
 - center: center point of detected object [x, y] normalized to input image dimensions
 - centerRaw: center point of detected object [x, y] normalized to 0..1
 
-<br>
+<br><hr><br>
+
+## Example
 
 ![Example Image](outputs/cars.jpg)
 
