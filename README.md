@@ -22,6 +22,8 @@ Function `processResults()` takes output of `model.execute` and returns array of
 - center: center point of detected object [x, y] normalized to input image dimensions
 - centerRaw: center point of detected object [x, y] normalized to 0..1
 
+<br>
+
 ![Example Image](outputs/cars.jpg)
 
 <br><hr><br>
