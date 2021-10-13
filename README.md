@@ -55,7 +55,7 @@ pip install torch onnx onnx-tf onnx-simplifier tensorflowjs
 python export.py --cfg_path config/nanodet-m-416.yml --model_path models/nanodet_m_416.pth --out_path models/nanodet_m_416.onnx
 python -m onnxsim models/nanodet_m_416.onnx models/nanodet_m_416-simplified.onnx
 onnx-tf convert --infile models/nanodet_m_416-simplified.onnx --outdir models/saved-m
-tensorflowjs_converter --input_format tf_saved_model --output_format tfjs_graph_model --strip_debug_ops=* --weight_shard_size_bytes 8388608 models/saved-m models/graph-m
+tensorflowjs_converter --input_format tf_saved_model --output_format tfjs_graph_model --strip_debug_ops=* --weight_shard_size_bytes 18388608 models/saved-m models/graph-m
 ```
 
 <br><hr><br>

@@ -7,9 +7,7 @@ const canvas = require('canvas');
 const { labels } = require('./coco-labels'); // note that number of labels *must* match expected output of the model
 
 const modelOptions = {
-  modelPath: 'file://model-tfjs-graph-g/nanodet.json',
-  // modelPath: 'file://model-tfjs-graph-m/nanodet.json',
-  // modelPath: 'file://model-tfjs-graph-m-f16/nanodet.json',
+  modelPath: 'file://models/nanodet-t.json',
   minScore: 0.20, // low confidence, but still remove irrelevant
   iouThreshold: 0.40, // percentage when removing overlapped boxes
   maxResults: 20, // high number of results, but likely never reached
@@ -46,7 +44,7 @@ async function saveImage(img, res) {
   ctx.stroke();
 
   // write canvas to jpeg
-  const outImage = `outputs/${path.basename(img.fileName)}`;
+  const outImage = `samples/out/${path.basename(img.fileName)}`;
   const out = fs.createWriteStream(outImage);
   out.on('finish', () => log.state('Created output image:', outImage));
   out.on('error', (err) => log.error('Error creating image:', outImage, err));
@@ -181,7 +179,7 @@ async function main() {
   log.info('Processing time:', Math.round(parseInt((t2 - t1).toString()) / 1000 / 1000), 'ms');
 
   // print results
-  log.data('Results:', results);
+  log.data('Results:', results.map((result) => ({ label: result.label, score: result.score })));
 
   // save processed image
   await saveImage(img, results);
