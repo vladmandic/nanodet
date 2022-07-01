@@ -7,12 +7,12 @@ const canvas = require('canvas');
 const { labels } = require('./coco-labels'); // note that number of labels *must* match expected output of the model
 
 const modelOptions = {
-  modelPath: 'file://models/nanodet-t.json',
+  modelPath: 'file://models/nanodet-m.json',
   minScore: 0.20, // low confidence, but still remove irrelevant
-  iouThreshold: 0.40, // percentage when removing overlapped boxes
-  maxResults: 20, // high number of results, but likely never reached
+  iouThreshold: 0.70, // percentage when removing overlapped boxes
+  maxResults: 50, // high number of results, but likely never reached
   scaleBox: 2.5, // increase box size
-  activateScore: false, // use exponential function to active scores or use them as-is
+  activateScore: false, // use exponential function to activate scores or use them as-is
 };
 
 // save image with processed results
@@ -27,7 +27,7 @@ async function saveImage(img, res) {
   // const fontSize = Math.trunc(c.width / 50);
   const fontSize = Math.round(Math.sqrt(c.width) / 1.5);
   ctx.lineWidth = 2;
-  ctx.strokeStyle = 'white';
+  ctx.strokeStyle = 'red';
   ctx.font = `${fontSize}px "Segoe UI"`;
 
   // draw all detected objects
@@ -56,7 +56,7 @@ async function saveImage(img, res) {
 async function loadImage(fileName, inputSize) {
   const data = fs.readFileSync(fileName);
   const obj = tf.tidy(() => {
-    const buffer = tf.node.decodeImage(data);
+    const buffer = tf.node.decodeImage(data, 3);
     const resize = tf.image.resizeBilinear(buffer, [inputSize, inputSize]);
     const cast = resize.cast('float32');
     const normalize = cast.div(255);
@@ -153,6 +153,7 @@ async function main() {
 
   // load model
   const model = await tf.loadGraphModel(modelOptions.modelPath);
+  log.info('TFJS version:', tf.version_core);
   log.info('Loaded model', modelOptions, 'tensors:', tf.engine().memory().numTensors, 'bytes:', tf.engine().memory().numBytes);
   // @ts-ignore
   log.info('Model Signature', model.signature);
