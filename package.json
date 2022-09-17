@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/vladmandic/nanodet#readme",
   "dependencies": {
-    "@tensorflow/tfjs-node": "3.19.0",
+    "@tensorflow/tfjs-node": "3.20.0",
     "@vladmandic/pilogger": "^0.4.4",
     "canvas": "^2.9.3"
   },
